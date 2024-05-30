@@ -13,7 +13,6 @@ export default function ({ command, mode }: ConfigEnv): UserConfig {
   const root = process.cwd();
   const env = loadEnv(mode, root);
   const viteEnv = wrapperEnv(env);
-
   return {
     root,
     resolve: {
@@ -37,7 +36,14 @@ export default function ({ command, mode }: ConfigEnv): UserConfig {
     server: {
       host: true,
       hmr: true,
-      https: true,
+      cors:true,
+      proxy: {
+        '/api': {
+            target: 'http://16.162.106.158:8000',
+            changeOrigin: true,
+            // rewrite: (path) => path.replace(/^\/api/, '')
+        }
+      }
     },
     plugins: createVitePlugins(viteEnv, isProduction),
     build: {
@@ -45,8 +51,8 @@ export default function ({ command, mode }: ConfigEnv): UserConfig {
       terserOptions: {
         compress: {
           //生产环境时移除console
-          drop_console: true,
-          drop_debugger: true,
+          drop_console: false,
+          drop_debugger: false,
         },
       },
     },

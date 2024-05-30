@@ -4,6 +4,7 @@ import { showToast } from 'vant';
 const service: AxiosInstance = axios.create({
   withCredentials: false,
   timeout: 10000,
+  baseURL: 'http://16.162.106.158:8000'
 });
 
 service.interceptors.request.use(
@@ -18,7 +19,7 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   (response: AxiosResponse) => {
     const res = response.data;
-    if (res.code !== 200) {
+    if (res.code !== 0) {
       showToast(res.msg);
       return Promise.reject(res.msg || 'Error');
     } else {

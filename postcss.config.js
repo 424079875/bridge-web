@@ -10,7 +10,7 @@ module.exports = {
     autoprefixer: { overrideBrowserslist: ['Android 4.1', 'iOS 7.1', 'Chrome > 31', 'ff > 31', 'ie >= 8'] },
     'cnjm-postcss-px-to-viewport': {
       unitToConvert: 'px', // 要转化的单位
-      viewportWidth: 750, // UI设计稿的宽度
+      viewportWidth: 375, // UI设计稿的宽度
       unitPrecision: 6, // 转换后的精度，即小数点位数
       propList: ['*'], // 指定转换的css属性的单位，*代表全部css属性的单位都进行转换
       viewportUnit: 'vw', // 指定需要转换成的视窗单位，默认vw
@@ -23,11 +23,11 @@ module.exports = {
       landscapeWidth: 1134, //横屏时使用的视口宽度
       include: [],
       exclude: [], // 设置忽略文件，用正则做目录名匹配
-      customFun: ({ file }) => {
-        // 这个自定义的方法是针对处理vant组件下的设计稿为375问题
-        const designWidth = judgeComponent(file) ? 375 : 750;
-        return designWidth;
-      },
+      // customFun: ({ file }) => {
+      //   // 这个自定义的方法是针对处理vant组件下的设计稿为375问题
+      //   const designWidth = judgeComponent(file) ? 375 : 750;
+      //   return designWidth;
+      // },
     },
   },
 };

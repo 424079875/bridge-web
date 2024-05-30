@@ -64,9 +64,7 @@
       <div class="form-item">
         <div class="item-title">
           <span>选择跨链资产</span>
-          <span
-            >余额：<span class="balance" v-if="isConnected">{{ tokenBalance.data?.value?.formatted ?? '--' }}</span></span
-          >
+          <span v-if="isConnected">余额：<span class="balance">{{ tokenBalance?.data?.value?.formatted ?? '--' }}</span></span>
         </div>
         <div class="input-number">
           <div class="coin-drop-down" @click="coinDropdownActiveChange()">
@@ -254,7 +252,7 @@
     return coinList.value[coinIndex.value]?.type == 'native' ? undefined : coinList.value[coinIndex.value]?.address;
   });
   const tokenBalance = useBalance({
-    address: address.value,
+    address: address,
     token: tokenAddress,
   });
 
@@ -276,13 +274,26 @@
   const { isLoading: isDepositing, isSuccess: isDeposited } = useWaitForTransactionReceipt({
     hash: depositHash,
   });
-
+  watch(isConnected, (newValue, oldValue) => {
+      console.log(`isConnected 的值从 ${oldValue} 变为 ${newValue}`);
+      if( newValue){
+        getOrderList();
+      }
+      if(!newValue){
+        orderList.value = []
+      }
+    });
+  watch(address, (newValue, oldValue) => {
+      console.log(`address 的值从 ${oldValue} 变为 ${newValue}`);
+      // if(oldValue != undefined && newValue){
+        getOrderList();
+        tokenBalance.refetch();
+      // }
+    });
   onMounted(() => {
-    console.log('1231232');
     document.addEventListener('click', closeDropdown);
     getChainList();
     getBridgeAddressList();
-    if (isConnected.value) getOrderList();
   });
   onBeforeUnmount(() => {
     document.removeEventListener('click', closeDropdown);
@@ -305,17 +316,17 @@
     chainList().then((res) => {
       allChainList.value = res.data ?? [];
       if (allChainList.value.length == 0) return;
-      setTimeout((_) => {
-        if (isConnected.value) networkChange(chainId.value);
-      }, 1000);
-      // getTargetChainList();
-      // getCoinList();
+      sourceChainDropdownActive.value = false;
+      sourceChainIndex.value = allChainList.value.findIndex((item) => item.chainId == chainId.value);
+      getTargetChainList();
+      getCoinList();
+      if (isConnected.value) networkChange(chainId.value);
     });
   };
 
   const getOrderList = () => {
     bridgeOrderList(address.value).then((res) => {
-      orderList.value = res.data;
+      orderList.value = res.data ?? [];
     });
   };
 
@@ -350,6 +361,10 @@
     }
     if (coinNum.value > (tokenBalance.data.value?.formatted ?? 0)) {
       return showToast.text('余额不足');
+    }
+    let feeObj = coinList.value[coinIndex.value]?.fee;
+    if (coinNum.value < (feeObj.feeFixed + (feeObj.feePercent / 100) * coinNum.value)) {
+      return showToast.text('输入数量不足以支付手续费');
     }
     if (!toAccountAddress.value) {
       return showToast.text('请输入收款地址');
@@ -479,7 +494,6 @@
           console.log('切换网络成功');
           sourceChainDropdownActive.value = false;
           sourceChainIndex.value = allChainList.value.findIndex((item) => item.chainId == id);
-          getOrderList();
           getTargetChainList();
           getCoinList();
         },
@@ -846,7 +860,9 @@
           color: #000;
           font-size: 16px;
           font-weight: 500;
-          line-height: 50px;
+          display: flex;
+          align-items: center;
+          overflow: hidden;
         }
       }
 
@@ -1020,4 +1036,3 @@
     }
   }
 </style>
-@/abi/erc20
