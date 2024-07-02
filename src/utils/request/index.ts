@@ -4,7 +4,8 @@ import { showToast } from 'vant';
 const service: AxiosInstance = axios.create({
   withCredentials: false,
   timeout: 10000,
-  baseURL: 'http://16.162.106.158:8000'
+  baseURL: 'https://mainapi.corebridge.info',
+  // baseURL: 'https://api.corebridge.info'
 });
 
 service.interceptors.request.use(
