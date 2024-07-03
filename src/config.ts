@@ -9,7 +9,7 @@ const kadsea = defineChain({
   name: 'Kad Sea',
   nativeCurrency: { name: 'kad', symbol: 'KAD', decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://rpc.kadchain.cc', 'https://rpc.orcchain.io'] },
+    default: { http: ['https://rpc.orcchain.io', 'https://rpc.kadchain.cc'] },
   },
   blockExplorers: {
     default: { name: 'Kadscan', url: 'https://kadscan.kadsea.org' },

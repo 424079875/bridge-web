@@ -11,6 +11,7 @@ declare module 'vue' {
     NutActionSheet: (typeof import('@nutui/nutui'))['ActionSheet'];
     NutEmpty: (typeof import('@nutui/nutui'))['Empty'];
     NutPopover: (typeof import('@nutui/nutui'))['Popover'];
+    NutSkeleton: (typeof import('@nutui/nutui'))['Skeleton'];
     RouterLink: (typeof import('vue-router'))['RouterLink'];
     RouterView: (typeof import('vue-router'))['RouterView'];
   }
