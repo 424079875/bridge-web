@@ -1,36 +1,16 @@
-export const bridgeAbi = [
-  {
-    inputs: [],
-    name: 'InvalidInitialization',
-    type: 'error',
-  },
-  {
-    inputs: [],
-    name: 'NotInitializing',
-    type: 'error',
-  },
+export const tronBridgeAbi = [
   {
     inputs: [
       {
-        internalType: 'address',
-        name: 'owner',
+        internalType: 'address payable',
+        name: '_hotAddr',
         type: 'address',
       },
     ],
-    name: 'OwnableInvalidOwner',
-    type: 'error',
+    stateMutability: 'nonpayable',
+    type: 'constructor',
   },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-    ],
-    name: 'OwnableUnauthorizedAccount',
-    type: 'error',
-  },
+
   {
     anonymous: false,
     inputs: [
@@ -54,9 +34,46 @@ export const bridgeAbi = [
       },
       {
         indexed: false,
+        internalType: 'address',
+        name: 'source_coin_address',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'bytes32',
+        name: 'order_id',
+        type: 'bytes32',
+      },
+    ],
+    name: 'DefundEvent',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'from',
+        type: 'address',
+      },
+      {
+        indexed: false,
         internalType: 'string',
-        name: 'to_blockchain',
+        name: 'to',
         type: 'string',
+      },
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'to_blockchain',
+        type: 'uint256',
       },
       {
         indexed: false,
@@ -72,19 +89,6 @@ export const bridgeAbi = [
       },
     ],
     name: 'DepositEvent',
-    type: 'event',
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: 'uint64',
-        name: 'version',
-        type: 'uint64',
-      },
-    ],
-    name: 'Initialized',
     type: 'event',
   },
   {
@@ -109,6 +113,29 @@ export const bridgeAbi = [
   {
     inputs: [
       {
+        internalType: 'address',
+        name: '_toAddr',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address',
+        name: 'token',
+        type: 'address',
+      },
+    ],
+    name: 'Defund',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
         internalType: 'string',
         name: '_toAddr',
         type: 'string',
@@ -119,9 +146,9 @@ export const bridgeAbi = [
         type: 'uint256',
       },
       {
-        internalType: 'string',
+        internalType: 'uint256',
         name: 'toChainId',
-        type: 'string',
+        type: 'uint256',
       },
       {
         internalType: 'address',
@@ -155,9 +182,9 @@ export const bridgeAbi = [
         type: 'address',
       },
       {
-        internalType: 'address',
+        internalType: 'string',
         name: 'to',
-        type: 'address',
+        type: 'string',
       },
       {
         internalType: 'uint256',
@@ -165,9 +192,9 @@ export const bridgeAbi = [
         type: 'uint256',
       },
       {
-        internalType: 'string',
+        internalType: 'uint256',
         name: 'toChainId',
-        type: 'string',
+        type: 'uint256',
       },
       {
         internalType: 'address',
@@ -190,18 +217,47 @@ export const bridgeAbi = [
     inputs: [
       {
         internalType: 'address',
-        name: 'initialOwner',
+        name: 'from',
         type: 'address',
       },
       {
         internalType: 'address',
-        name: '_hotAddr',
+        name: 'to',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address',
+        name: 'token',
         type: 'address',
       },
     ],
-    name: 'initialize',
-    outputs: [],
-    stateMutability: 'nonpayable',
+    name: 'generateRefundOrderId',
+    outputs: [
+      {
+        internalType: 'bytes32',
+        name: '',
+        type: 'bytes32',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'hotAddr',
+    outputs: [
+      {
+        internalType: 'address payable',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
     type: 'function',
   },
   {
@@ -240,7 +296,7 @@ export const bridgeAbi = [
   {
     inputs: [
       {
-        internalType: 'address',
+        internalType: 'address payable',
         name: '_hotAddr',
         type: 'address',
       },
@@ -253,9 +309,9 @@ export const bridgeAbi = [
   {
     inputs: [
       {
-        internalType: 'string',
-        name: '_chainIdTo',
-        type: 'string',
+        internalType: 'uint256[]',
+        name: '_chainIds',
+        type: 'uint256[]',
       },
       {
         internalType: 'bool',
@@ -263,7 +319,7 @@ export const bridgeAbi = [
         type: 'bool',
       },
     ],
-    name: 'setSupportChain',
+    name: 'setSupportChains',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
@@ -271,9 +327,14 @@ export const bridgeAbi = [
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_token',
-        type: 'address',
+        internalType: 'uint256',
+        name: '_chainId',
+        type: 'uint256',
+      },
+      {
+        internalType: 'address[]',
+        name: '_tokens',
+        type: 'address[]',
       },
       {
         internalType: 'bool',
@@ -281,9 +342,53 @@ export const bridgeAbi = [
         type: 'bool',
       },
     ],
-    name: 'setSupportToken',
+    name: 'setSupportTokens',
     outputs: [],
     stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    name: 'supportChain',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+
+        type: 'uint256',
+      },
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    name: 'supportToken',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'view',
     type: 'function',
   },
   {

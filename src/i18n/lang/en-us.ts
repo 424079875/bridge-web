@@ -50,6 +50,7 @@ export const lang: langType = {
     disconnectedSuccessfully: 'Disconnect successfully',
     notSupportNetwork: 'This network is not supported yet',
     copySuccess: 'Copy successful',
+    tronLinkLock: 'tronLink is locked, please unlock manually',
   },
   order: {
     type: 'Type',

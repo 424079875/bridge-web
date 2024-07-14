@@ -50,6 +50,7 @@ export const lang: langType = {
     disconnectedSuccessfully: 'Berhasil terputus',
     notSupportNetwork: 'Jaringan ini belum didukung',
     copySuccess: 'Salinan berhasil',
+    tronLinkLock: 'tronLink terkunci, harap buka kuncinya secara manual',
   },
   order: {
     type: 'Jenis',

@@ -10,6 +10,12 @@ declare global {
     };
     lastBuildTime: string;
   };
+  declare interface Window {
+    tronLink: any;
+    tronWeb: any;
+  }
+
+  declare type TronWeb = any;
 
   // vue
   declare type PropType<T> = VuePropType<T>;

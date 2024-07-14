@@ -50,6 +50,7 @@ export const lang: langType = {
     disconnectedSuccessfully: 'Đã ngắt kết nối thành công',
     notSupportNetwork: 'Mạng này chưa được hỗ trợ',
     copySuccess: 'Sao chép thành công',
+    tronLinkLock: 'tronLink đã bị khóa, vui lòng mở khóa bằng tay',
   },
   order: {
     type: 'Loại',

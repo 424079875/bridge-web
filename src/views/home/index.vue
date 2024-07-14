@@ -19,7 +19,6 @@
           </div>
         </div>
       </div>
-      <div> </div>
       <div class="wallet-connect">
         <div class="wallet-connect-btn" v-if="!isConnected" @click="walletConnect()">{{ $t('home.connectWallet') }}</div>
         <div
@@ -52,7 +51,7 @@
 
       <div class="network-select" v-if="isConnected">
         <div class="network-select-btn" @click="networkDropdown">
-          <img class="network-icon" :src="getChainIcon(chainId)" alt="" />
+          <img class="network-icon" :src="getChainIcon(sourceChainId == -1 ? allChainList[sourceChainIndex].chainId : chainId)" alt="" />
           <img class="network-arrow" src="@/assets/icon_arrow_down_2.png" alt="" />
         </div>
 
@@ -69,7 +68,7 @@
         <div class="item-title">
           <span>{{ $t('home.selectCrossChainAssets') }}</span>
           <span v-if="isConnected"
-            >{{ $t('home.balance') }}：<span class="balance">{{ tokenBalance?.data?.value?.formatted ?? '--' }}</span></span
+            >{{ $t('home.balance') }}：<span class="balance">{{ tokenBalance ?? '--' }}</span></span
           >
         </div>
         <div class="input-number">
@@ -121,22 +120,26 @@
       </div>
       <div style="height: 18px"></div>
       <div class="submit-button" @click="walletConnect()" v-if="!isConnected">{{ $t('home.connectWallet') }}</div>
-      <div class="submit-button" @click="networkChange(sourceChainId)" v-else-if="accountChainId != sourceChainId"
-        >{{ $t('home.switchTo') }} {{ allChainList[sourceChainIndex]?.name }}</div
-      >
+      <div class="submit-button" @click="networkChange(sourceChainId)" v-else-if="sourceChainId != -1 && accountChainId != sourceChainId">
+        {{ $t('home.switchTo') }} {{ allChainList[sourceChainIndex]?.name }}
+      </div>
+
+      <div class="submit-button opacity-4" v-else-if="tokenBalance == '0' || parseFloat(coinNum) > parseFloat(tokenBalance ?? 0)"
+        >{{ $t('home.insufficientBalance') }}
+      </div>
       <div
-        class="submit-button opacity-4"
-        v-else-if="
-          tokenBalance?.data?.value?.formatted == '0' || parseFloat(coinNum) > parseFloat(tokenBalance?.data?.value?.formatted ?? 0)
-        "
-        >{{ $t('home.insufficientBalance') }}</div
+        class="submit-button"
+        :class="{ 'opacity-4': !coinNum }"
+        @click="approve()"
+        v-else-if="sourceChainId == -1 && tokenAddress && (!tronAllowance || tronAllowance < coinNum)"
+        >{{ lockApprove ? `${$t('home.Approveing')}...` : $t('home.Approve') }}</div
       >
       <div
         class="submit-button"
         :class="{ 'opacity-4': !coinNum }"
         @click="approve()"
         v-else-if="
-          (!allowanceResult.data.value && !isAllowanceed && tokenAddress) ||
+          (sourceChainId != -1 && !allowanceResult.data.value && !isAllowanceed && tokenAddress) ||
           allowanceResult.data.value! < coinNum * 10 ** coinList[coinIndex]?.decimals
         "
         >{{ isAllowanceing || refetchAllowance ? `${$t('home.Approveing')}...` : $t('home.Approve') }}</div
@@ -247,7 +250,7 @@
   const chainId = useChainId();
   const { chains, switchChain } = useSwitchChain();
   const { connect } = useConnect();
-  const { address, isConnected, chainId: accountChainId } = useAccount();
+  const { address: evmAddress, isConnected: isEvmConnected, chainId: accountChainId } = useAccount();
   const { disconnect } = useDisconnect();
   const { reconnect } = useReconnect();
   const langDropdownActive = ref(false);
@@ -270,6 +273,14 @@
   const lockApprove = ref(false);
   const lockSubmit = ref(false);
   const refetchAllowance = ref(false);
+  const tronAddress = ref();
+  const tronBalance = ref();
+  const isTronConnect = ref(false);
+  const tronLinkDisconnect = ref(false);
+  const tronAllowance = ref();
+  const isTronTrc20HaveNoFee = ref(false);
+  // 声明一个响应式变量来保存 TronWeb 实例
+  const tronWebInstance = ref();
   let orderListRequests = 0;
   // let cellList = ['vue3', 'vite', 'vue-router', 'axios', 'Pinia', 'vue-i18n', 'postcss-px-to-viewport', 'varlet / vant / nutUI', 'eruda'];
   const userStore = useUserStore();
@@ -286,6 +297,12 @@
     const { name = '' } = userStore.getUserInfo || {};
     return name;
   });
+  const isConnected = computed(() => {
+    return sourceChainId.value == -1 ? isTronConnect.value && !tronLinkDisconnect.value : isEvmConnected.value;
+  });
+  const address = computed(() => {
+    return sourceChainId.value == -1 ? tronAddress.value : evmAddress.value;
+  });
   const coinIcon = computed(() => {
     if (coinList.value.length == 0 || !coinList.value[coinIndex.value].icon) return coinDefaultIcon;
     return coinList.value[coinIndex.value].icon;
@@ -297,29 +314,59 @@
   const feeValue = computed(() => {
     let feeObj = coinList.value[coinIndex.value]?.fee;
     return feeObj
-      ? `${feeObj.feeFixed} + ${formatNumber((feeObj.feePercent * 1000000 * ((coinNum.value ?? 0) * 1000000)) / 100000000000000)}`
+      ? `${feeObj.feeFixed + (isTronTrc20HaveNoFee.value ? feeObj.tronTrc20HaveNoFee : 0)} + ${formatNumber((feeObj.feePercent * 1000000 * ((coinNum.value ?? 0) * 1000000)) / 100000000000000)}`
       : '--';
   });
 
   const bridgeAddress = computed(() => {
-    return bridgeContractList.value.find((item) => item.chainId == chainId.value)?.bridgeAddress;
+    return bridgeContractList.value.find(
+      (item) =>
+        (sourceChainId.value != -1 && item.chainId == chainId.value) || (sourceChainId.value == -1 && item.chainId.includes('tron')),
+    )?.bridgeAddress;
   });
   const tokenAddress = computed(() => {
     return coinList.value[coinIndex.value]?.type == 'native' ? undefined : coinList.value[coinIndex.value]?.address;
   });
   const sourceChainId = computed(() => {
-    const id = allChainList.value ? Number(allChainList?.value[sourceChainIndex.value]?.chainId) : undefined;
-    return id;
+    const id = allChainList.value ? allChainList?.value[sourceChainIndex.value]?.chainId : undefined;
+    console.log('sourceChainId', id);
+    return id ? (id.includes('tron') ? -1 : Number(id)) : undefined;
   });
   const isEthUsdt = computed(() => {
-    return chainId.value == 1 && coinList.value[coinIndex.value].address == '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+    return chainId.value == 1 && tokenAddress.value == '0xdAC17F958D2ee523a2206206994597C13D831ec7';
   });
-
-  const tokenBalance = useBalance({
+  const tokenBalance = computed(() => {
+    return sourceChainId.value == -1 ? tronBalance.value : evmBalance.data?.value?.formatted;
+  });
+  const evmBalance = useBalance({
     address: address,
     token: tokenAddress,
     chainId: sourceChainId,
   });
+  const getTronBalance = async () => {
+    tronBalance.value = null;
+    tronAllowance.value = null;
+    if (window.tronWeb.ready) {
+      if (tokenAddress.value) {
+        const contract = await window.tronWeb.contract().at(tokenAddress.value);
+        const balance = await contract.balanceOf(address.value).call();
+        tronBalance.value = balance / Math.pow(10, coinList.value[coinIndex.value].decimals);
+        const allowance = await contract.allowance(address.value, bridgeAddress.value).call();
+        tronAllowance.value = allowance / Math.pow(10, coinList.value[coinIndex.value].decimals);
+        console.log('tronBalance:', tronBalance.value);
+        console.log('tronAllowance:', tronAllowance.value);
+      } else {
+        tronWebInstance.value.trx
+          .getBalance(address.value)
+          .then((res) => {
+            tronBalance.value = res / Math.pow(10, coinList.value[coinIndex.value].decimals);
+          })
+          .catch((err) => {
+            console.log('tron balance err', err);
+          });
+      }
+    }
+  };
 
   const allowanceResult = useReadContract({
     abi: erc20Abi,
@@ -345,12 +392,15 @@
       orderList.value = [];
     }
   });
+  watch([toAccountAddress, sourceChainIndex, targetChainIndex, coinIndex], () => {
+    getTronReceivingBalance();
+  });
   watch(address, (newValue, oldValue) => {
     console.log(`address 的值从 ${oldValue} 变为 ${newValue}`);
     if (oldValue != undefined && newValue) {
       getOrderList();
     }
-    tokenBalance.refetch();
+    evmBalance.refetch();
     allowanceResult.refetch();
   });
 
@@ -385,8 +435,37 @@
     if (!regex.test(newValue)) coinNum.value = oldValue;
   });
   onMounted(() => {
-    console.log('navigator.userAgent', navigator.userAgent);
     document.addEventListener('click', closeDropdown);
+    tronWebInstance.value = new TronWeb({
+      fullHost: 'https://api.shasta.trongrid.io',
+      solidityNode: 'https://api.shasta.trongrid.io',
+      eventServer: 'https://api.shasta.trongrid.io',
+      // privateKey: 'd275b5ce1a4807e0ee906f77dc4f82dc6c920fca348a9e31f9903cac7ddacf62'
+    });
+    tronWebInstance.value.setAddress('TKLoEdqS4Hg3rjU9LVJqJAtGG1gFdb1Mpi');
+    tronLinkDisconnect.value = localStorage.getItem('tronLinkDisconnect') == 'true' ? true : false;
+    if (typeof window.tronLink != 'undefined') {
+      tronAddress.value = window.tronWeb.defaultAddress.base58;
+      isTronConnect.value = window.tronWeb.ready;
+    }
+    window.addEventListener('message', function (e) {
+      if (e.data.message && e.data.message.action == 'disconnect') {
+        // handler logic
+        console.log('got connect event', e.data);
+        tronAddress.value = '';
+        isTronConnect.value = window.tronWeb.ready;
+      }
+      if (e.data.message && e.data.message.action === 'accountsChanged') {
+        // handler logic
+        console.log('got accountsChanged event', e.data);
+        tronAddress.value = e.data.message.data.address;
+        isTronConnect.value = window.tronWeb.ready;
+        if (isConnected.value && sourceChainId.value == -1) {
+          getTronBalance();
+        }
+      }
+    });
+
     if (isConnected.value && orderListRequests == 0) getOrderList();
     getChainList();
     getBridgeAddressList();
@@ -399,6 +478,78 @@
   onBeforeUnmount(() => {
     document.removeEventListener('click', closeDropdown);
   });
+
+  const tronApprove = async () => {
+    try {
+      const _tokenAddress = tokenAddress.value;
+      const balance = (Number(tronBalance.value) * Math.pow(10, coinList.value[coinIndex.value].decimals)).toString();
+      const parameter = [
+        { type: 'address', value: bridgeAddress.value },
+        { type: 'uint256', value: balance },
+      ];
+      var tx = await window.tronWeb.transactionBuilder.triggerSmartContract(
+        tokenAddress.value,
+        'approve(address,uint256)',
+        {
+          shouldPollResponse: true,
+        },
+        parameter,
+        address.value,
+      );
+      var signedTx = await window.tronWeb.trx.sign(tx.transaction);
+      var broastTx = await window.tronWeb.trx.sendRawTransaction(signedTx);
+      console.log('broastTx', broastTx);
+      if (_tokenAddress == tokenAddress.value) {
+        const contract = await window.tronWeb.contract().at(tokenAddress.value);
+        const allowance = await contract.allowance(address.value, bridgeAddress.value).call();
+        tronAllowance.value = allowance / Math.pow(10, coinList.value[coinIndex.value].decimals);
+      }
+      lockApprove.value = false;
+    } catch (res: any) {
+      lockApprove.value = false;
+      console.log('approveErr:', res);
+      /// 取消授权
+      if (res.toString().includes('Confirmation declined by user'))
+        return showToast.text(loadLang()[i18n.global.locale.value].home.cancelApprove);
+      /// 交易失败
+      return showToast.text(loadLang()[i18n.global.locale.value].home.ApproveFailed);
+    }
+  };
+
+  const tronDeposit = async (amount) => {
+    try {
+      if (window.tronWeb.ready) {
+        const parameter = [
+          { type: 'string', value: toAccountAddress.value ?? address.value },
+          { type: 'uint256', value: amount },
+          { type: 'string', value: targetChainList.value[targetChainIndex.value].chainId },
+          { type: 'address', value: tokenAddress.value },
+        ];
+        var tx = await window.tronWeb.transactionBuilder.triggerSmartContract(
+          bridgeAddress.value,
+          'Deposit(string,uint256,string,address)',
+          {
+            callValue: 0,
+          },
+          parameter,
+          address.value,
+        );
+        var signedTx = await window.tronWeb.trx.sign(tx.transaction);
+        var broastTx = await window.tronWeb.trx.sendRawTransaction(signedTx);
+        console.log('broastTx', broastTx);
+        showToast.text(loadLang()[i18n.global.locale.value].home.submitSuccessful);
+      }
+      lockSubmit.value = false;
+    } catch (res: any) {
+      lockSubmit.value = false;
+      console.log('approveErr:', res);
+      /// 取消支付
+      if (res.toString().includes('Confirmation declined by user'))
+        return showToast.text(loadLang()[i18n.global.locale.value].home.cancelPayment);
+      /// 交易失败
+      return showToast.text(loadLang()[i18n.global.locale.value].home.transactionFailed);
+    }
+  };
 
   const changeLang = (type) => {
     setLang(type);
@@ -425,7 +576,8 @@
       sourceChainDropdownActive.value = false;
       const _sourceChainId = localStorage.getItem('sourceChainId');
       if (_sourceChainId) {
-        let index = allChainList.value.findIndex((item) => item.chainId == JSON.parse(_sourceChainId));
+        let id = JSON.parse(_sourceChainId);
+        let index = allChainList.value.findIndex((item) => (id == -1 ? item.chainId.includes('tron') : item.chainId == id));
         sourceChainIndex.value = index == -1 ? 0 : index;
       }
       allChainList.value.forEach((item) => {
@@ -460,39 +612,56 @@
   const getCoinList = () => {
     coinIndex.value = 0;
     coinList.value = targetChainList.value[targetChainIndex.value]?.sourceCoins ?? [];
+    if (sourceChainId.value == -1) getTronBalance();
   };
   const submit = async () => {
     if (lockSubmit.value) return;
     if (!coinNum.value) {
       return showToast.text(loadLang()[i18n.global.locale.value].home.inputQuantity);
     }
-    if (Number(coinNum.value) > Number(tokenBalance.data.value?.formatted ?? 0)) {
+    if (Number(coinNum.value) > Number(tokenBalance.value ?? 0)) {
       return showToast.text(loadLang()[i18n.global.locale.value].home.insufficientBalance);
     }
     let feeObj = coinList.value[coinIndex.value]?.fee;
-    if (coinNum.value < feeObj.feeFixed + (feeObj.feePercent / 100) * coinNum.value) {
+    if (
+      coinNum.value <
+      feeObj.feeFixed + (isTronTrc20HaveNoFee.value ? feeObj.tronTrc20HaveNoFee : 0) + (feeObj.feePercent / 100) * coinNum.value
+    ) {
       return showToast.text(loadLang()[i18n.global.locale.value].home.submitTips);
     }
     if (!toAccountAddress.value) {
       return showToast.text(loadLang()[i18n.global.locale.value].home.pleaseEnterThepaymentAddress);
     }
-    if (!/^0x[0-9a-fA-F]{40}$/.test(toAccountAddress.value)) {
-      return showToast.text(loadLang()[i18n.global.locale.value].home.addressError);
+    if (targetChainList.value[targetChainIndex.value].chainId.includes('tron')) {
+      console.log('tronWebInstance', tronWebInstance.value);
+      if (!tronWebInstance.value.isAddress(toAccountAddress.value)) {
+        return showToast.text(loadLang()[i18n.global.locale.value].home.addressError);
+      }
+    } else {
+      if (!/^0x[0-9a-fA-F]{40}$/.test(toAccountAddress.value)) {
+        return showToast.text(loadLang()[i18n.global.locale.value].home.addressError);
+      }
     }
-    const amount = BigInt(Number(coinNum.value) * Math.pow(10, coinList.value[coinIndex.value].decimals));
+
     lockSubmit.value = true;
+    const amount = BigInt(Number(coinNum.value) * Math.pow(10, coinList.value[coinIndex.value].decimals));
+    if (sourceChainId.value == -1) tronDeposit(amount);
+    else evmDeposit(amount);
+  };
+
+  const evmDeposit = (amount) => {
     try {
       depositWriteContract(
         {
           abi: bridgeAbi,
           address: bridgeAddress.value,
           functionName: 'Deposit',
-          value: tokenAddress.value ? undefined : amount,
+          value: tokenAddress.value === undefined ? amount : undefined,
           args: [
             toAccountAddress.value,
             amount,
             targetChainList.value[targetChainIndex.value].chainId,
-            coinList.value[coinIndex.value].address,
+            coinList.value[coinIndex.value].address, // tokenAddress
           ],
         },
         {
@@ -511,20 +680,28 @@
           },
         },
       );
-    } catch {
+    } catch (error) {
       lockSubmit.value = false;
+      showToast.text(loadLang()[i18n.global.locale.value].home.transactionFailed);
     }
   };
+
   const approve = () => {
-    if (isAllowanceing.value || lockApprove.value || !coinNum.value || refetchAllowance.value) return;
+    if (lockApprove.value || !coinNum.value) return;
+    if (sourceChainId.value != -1 && (isAllowanceing.value || refetchAllowance.value)) return;
     lockApprove.value = true;
+    if (sourceChainId.value == -1) tronApprove();
+    else evmApprove();
+  };
+
+  const evmApprove = () => {
     try {
       approveWriteContract(
         {
           abi: isEthUsdt.value ? ethUsdtAbi : erc20Abi, ///eth-usdt abi返回格式与其他erc20不一样
-          address: coinList.value[coinIndex.value].address,
+          address: tokenAddress.value,
           functionName: 'approve',
-          args: [bridgeAddress.value, tokenBalance?.data?.value?.value ?? 10000000000000000000000000000000n],
+          args: [bridgeAddress.value, evmBalance?.data?.value?.value ?? 10000000000000000000000000000000n],
         },
         {
           onSettled: (_) => {
@@ -542,6 +719,30 @@
       );
     } catch {
       lockApprove.value = false;
+      showToast.text(loadLang()[i18n.global.locale.value].home.ApproveFailed);
+    }
+  };
+
+  const getTronReceivingBalance = async () => {
+    if (targetChainList.value[targetChainIndex.value].chainId.includes('tron') && tronWebInstance.value.isAddress(toAccountAddress.value)) {
+      let _coinSymbol = coinList.value[coinIndex.value].symbol == 'KUSD' ? 'USDT' : coinList.value[coinIndex.value].symbol;
+      let _tokenAddress = '';
+      allChainList.value.forEach((item) => {
+        if (item.chainId.includes('tron')) {
+          item.targetChains.forEach((targetItem) => {
+            targetItem.sourceCoins.forEach((coinItem) => {
+              if (coinItem.symbol == _coinSymbol) {
+                _tokenAddress = coinItem.address;
+              }
+            });
+          });
+        }
+      });
+      const contract = await tronWebInstance.value.contract(erc20Abi, _tokenAddress);
+      const balance = await contract.balanceOf(toAccountAddress.value).call();
+      isTronTrc20HaveNoFee.value = balance == 0;
+    } else {
+      isTronTrc20HaveNoFee.value = false;
     }
   };
 
@@ -565,6 +766,11 @@
   };
 
   const walletConnect = () => {
+    if (sourceChainId.value == -1) tronConnect();
+    else evmConnect();
+  };
+
+  const evmConnect = () => {
     if (typeof window.ethereum === 'undefined') {
       // 如果 window.ethereum 未定义，说明用户未安装 MetaMask
       showToast.text(`${loadLang()[i18n.global.locale.value].home.pleaseInstallFirst} MetaMask`);
@@ -583,24 +789,64 @@
       );
     }
   };
+  const tronConnect = () => {
+    if (typeof window.tronLink === 'undefined') {
+      // 沒安裝插件
+      showToast.text(`${loadLang()[i18n.global.locale.value].home.pleaseInstallFirst} TronLink`);
+    } else {
+      // 有安裝插件
+      if (window.tronLink.ready) {
+        // 錢包插件連接成功
+        tronAddress.value = window.tronWeb.defaultAddress.base58;
+        isTronConnect.value = window.tronWeb.ready;
+        tronLinkDisconnect.value = false;
+        localStorage.setItem('tronLinkDisconnect', 'false');
+      } else {
+        console.log('未連接錢包，喚起錢包插件登入彈窗');
+        // 未連接錢包，喚起錢包插件登入彈窗
+        window.tronLink.request({ method: 'tron_requestAccounts' }).then((res) => {
+          if (!res) {
+            showToast.text(`${loadLang()[i18n.global.locale.value].home.tronLinkLock}`);
+          } else if (res.code === 200) {
+            tronAddress.value = window.tronWeb.defaultAddress.base58;
+            tronLinkDisconnect.value = false;
+            localStorage.setItem('tronLinkDisconnect', 'false');
+          }
+          isTronConnect.value = window.tronWeb.ready;
+        });
+      }
+    }
+  };
 
   const walletDisconnect = () => {
-    disconnect(
-      {},
-      {
-        onSuccess: () => {
-          console.log('断开连接成功');
-          if (isConnected.value) walletDisconnect();
+    if (sourceChainId.value == -1) {
+      localStorage.setItem('tronLinkDisconnect', 'true');
+      tronLinkDisconnect.value = true;
+    } else {
+      disconnect(
+        {},
+        {
+          onSuccess: () => {
+            console.log('断开连接成功');
+            if (isConnected.value) walletDisconnect();
+          },
+          onError: (error) => {
+            console.log(error);
+          },
         },
-        onError: (error) => {
-          console.log(error);
-        },
-      },
-    );
+      );
+    }
     walletDropdownActive.value = false;
   };
 
   const networkChange = (id) => {
+    console.log(id);
+    if (id == -1 || id.toString().includes('tron')) {
+      networkDropdownActive.value = sourceChainDropdownActive.value = false;
+      const index = allChainList.value.findIndex((item) => item.chainId.includes('tron'));
+      sourceChainChange(index);
+      return;
+    }
     const _chain = chains.value.find((item) => item.id == id);
     if (!_chain) {
       showToast.text(loadLang()[i18n.global.locale.value].home.notSupportNetwork);
@@ -631,7 +877,7 @@
   const coinChange = (index) => {
     coinDropdownActive.value = false;
     coinIndex.value = index;
-    console.log(tokenAddress.value);
+    if (sourceChainId.value == -1) getTronBalance();
   };
 
   const walletDropdown = () => {
@@ -674,14 +920,15 @@
   ///根据链id，打开区块链浏览器
   const openExplorer = () => {
     let url = '';
-    switch (chainId.value) {
+    let id = sourceChainId.value == -1 ? allChainList.value[sourceChainIndex.value].chainId : chainId.value;
+    switch (id) {
       case 1:
         url = `https://etherscan.io/address/${address.value}`;
         break;
       case 56:
         url = `https://bscscan.com/address/${address.value}`;
         break;
-      case 42161:
+      case 42164:
         url = `https://arbiscan.io/address/${address.value}`;
         break;
       case 878:
@@ -689,6 +936,12 @@
         break;
       case 97:
         url = `https://testnet.bscscan.com/address/${address.value}`;
+        break;
+      case 'tron shasta':
+        url = `https://shasta.tronscan.org/#/address/${address.value}`;
+        break;
+      case 'tron':
+        url = `https://tronscan.org/#/address/${address.value}`;
         break;
       default:
         break;

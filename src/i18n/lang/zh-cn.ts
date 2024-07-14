@@ -49,6 +49,7 @@ export const lang: langType = {
     disconnectedSuccessfully: '断开连接成功',
     notSupportNetwork: '暂未支持此网络',
     copySuccess: '复制成功',
+    tronLinkLock: 'tronLink已锁定，请手动解锁',
   },
   order: {
     type: '类型',
