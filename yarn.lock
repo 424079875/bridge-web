@@ -9509,6 +9509,11 @@ postcss-media-query-parser@^0.2.3:
   resolved "https://registry.yarnpkg.com/postcss-media-query-parser/-/postcss-media-query-parser-0.2.3.tgz#27b39c6f4d94f81b1a73b8f76351c609e5cef244"
   integrity sha512-3sOlxmbKcSHMjlUXQZKQ06jOswE7oVkXPxmZdoB1r5l0q6gTFTQSHxNxOrCccElbW7dxNytifNEo8qidX2Vsig==
 
+postcss-mobile-forever@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/postcss-mobile-forever/-/postcss-mobile-forever-0.0.1.tgz#1620877e9698fa31712b8994a44b5538efaf71fb"
+  integrity sha512-SMQ4Fd3PQf+c433kIH1MWgf6177jdZVCWo96uMLoJPvGFEDmnrwKs2ol3Ra8KdVz9mFoEmH1QzjK3yxYeHx2EQ==
+
 postcss-prefix-selector@^1.6.0:
   version "1.16.1"
   resolved "https://registry.yarnpkg.com/postcss-prefix-selector/-/postcss-prefix-selector-1.16.1.tgz#87a77523838b79c0e8aec29f173234b2987cdc04"

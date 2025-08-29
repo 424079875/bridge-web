@@ -336,6 +336,7 @@
     return chainId.value == 1 && tokenAddress.value == '0xdAC17F958D2ee523a2206206994597C13D831ec7';
   });
   const tokenBalance = computed(() => {
+    console.log('tokenBalance', evmBalance);
     return sourceChainId.value == -1 ? tronBalance.value : evmBalance.data?.value?.formatted;
   });
   const evmBalance = useBalance({
