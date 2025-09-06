@@ -7,12 +7,12 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    BasicModal: (typeof import('./../src/components/Modal/src/BasicModal.vue'))['default'];
-    NutActionSheet: (typeof import('@nutui/nutui'))['ActionSheet'];
-    NutEmpty: (typeof import('@nutui/nutui'))['Empty'];
-    NutPopover: (typeof import('@nutui/nutui'))['Popover'];
-    NutSkeleton: (typeof import('@nutui/nutui'))['Skeleton'];
-    RouterLink: (typeof import('vue-router'))['RouterLink'];
-    RouterView: (typeof import('vue-router'))['RouterView'];
+    BasicModal: typeof import('./../src/components/Modal/src/BasicModal.vue')['default']
+    NutActionSheet: typeof import('@nutui/nutui')['ActionSheet']
+    NutEmpty: typeof import('@nutui/nutui')['Empty']
+    NutPopover: typeof import('@nutui/nutui')['Popover']
+    NutSkeleton: typeof import('@nutui/nutui')['Skeleton']
+    RouterLink: typeof import('vue-router')['RouterLink']
+    RouterView: typeof import('vue-router')['RouterView']
   }
 }
