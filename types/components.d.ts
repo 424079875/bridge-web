@@ -8,9 +8,10 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BasicModal: typeof import('./../src/components/Modal/src/BasicModal.vue')['default']
-    NutActionSheet: typeof import('@nutui/nutui')['ActionSheet']
+    Header: typeof import('./../src/components/Header/index.vue')['default']
     NutEmpty: typeof import('@nutui/nutui')['Empty']
     NutPopover: typeof import('@nutui/nutui')['Popover']
+    NutPopup: typeof import('@nutui/nutui')['Popup']
     NutSkeleton: typeof import('@nutui/nutui')['Skeleton']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

@@ -1,68 +1,30 @@
 <template>
-  <div class="home-page">
-    <div class="header">
-      <!-- <img class="logo" src="@/assets/icon_logo.png" alt="" /> -->
-      <div class="flex-1"></div>
-      <!-- <button
-    v-for="connector in connectors"
-    @click="connect({ connector, chainId })"
-  >
-    {{ connector.name }}
-  </button> -->
-      <div class="lang-select">
-        <div class="lang-select-btn">
-          <img src="@/assets/icon_lang.png" alt="" @click="langDropdownActive = !langDropdownActive" />
-        </div>
-        <div class="lang-dropdown" v-show="langDropdownActive">
-          <div class="lang-dropdown-item" v-for="lang in langList" :key="lang.value" @click="changeLang(lang.value)">
-            <span>{{ lang.label }}</span>
-          </div>
-        </div>
-      </div>
-      <div class="wallet-connect">
-        <div class="wallet-connect-btn" v-if="!isConnected" @click="walletConnect()">{{ $t('home.connectWallet') }}</div>
-        <div
-          class="wallet-connect-btn"
-          :style="{ borderRadius: walletDropdownActive ? '14px 14px 0 0' : '14px' }"
-          @click="walletDropdown"
-          v-else
-        >
-          <div class="wallet-address">{{ address?.toString().replace(/^(.{4}).*(.{4})$/, '$1...$2') }}</div>
-          <img class="wallet-arrow" src="@/assets/icon_arrow_down_2.png" alt="" />
-        </div>
-
-        <div class="wallet-dropdown" v-show="walletDropdownActive">
-          <div class="wallet-dropdown-wrapper">
-            <div class="wallet-dropdown-item" @click="copyText(address), (walletDropdownActive = false)">
-              <img src="@/assets/icon_copy.png" alt="" />
-              <span>{{ $t('home.copyAaddress') }}</span>
-            </div>
-            <div class="wallet-dropdown-item" @click="openExplorer()">
-              <img src="@/assets/icon_browser.png" alt="" />
-              <span>{{ $t('home.browserView') }}</span>
-            </div>
-            <div class="wallet-dropdown-item" @click="walletDisconnect()">
-              <img src="@/assets/icon_disconnect.png" alt="" />
-              <span>{{ $t('home.disconnect') }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="network-select" v-if="isConnected">
-        <div class="network-select-btn" @click="networkDropdown">
-          <img class="network-icon" :src="getChainIcon(sourceChainId == -1 ? allChainList[sourceChainIndex].chainId : chainId)" alt="" />
-          <img class="network-arrow" src="@/assets/icon_arrow_down_2.png" alt="" />
-        </div>
-
-        <div class="network-dropdown" v-show="networkDropdownActive">
-          <div class="network-dropdown-item" v-for="chain in allChainList" :key="chain.chainId" @click="networkChange(chain.chainId)">
-            <img :src="getChainIcon(chain.chainId)" alt="" />
-            <span>{{ chain.name }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
+  <Header
+    :langDropdownActive="langDropdownActive"
+    :walletDropdownActive="walletDropdownActive"
+    :networkDropdownActive="networkDropdownActive"
+    :langList="langList"
+    :isConnected="isConnected"
+    :address="address"
+    :addressShort="address?.toString().replace(/^(.{6}).*(.{4})$/, '$1...$2')"
+    :connectWalletText="$t('home.connectWallet')"
+    :copyAaddressText="$t('home.copyAaddress')"
+    :browserViewText="$t('home.browserView')"
+    :disconnectText="$t('home.disconnect')"
+    :networkIcon="getChainIcon(sourceChainId == -1 ? allChainList[sourceChainIndex].chainId : chainId)"
+    :allChainList="allChainList"
+    :getChainIcon="getChainIcon"
+    @toggleLangDropdown="langDropdownActive = !langDropdownActive"
+    @changeLang="changeLang"
+    @walletConnect="walletConnect"
+    @walletDropdown="walletDropdown"
+    @copyText="copyText"
+    @openExplorer="openExplorer"
+    @walletDisconnect="walletDisconnect"
+    @networkDropdown="networkDropdown"
+    @networkChange="networkChange" 
+  />
+  <div class="home-page" style="padding-top: 60px;">
     <div class="form">
       <div class="form-item">
         <div class="item-title">
@@ -193,33 +155,48 @@
         </div>
       </div>
     </div>
-
-    <nut-action-sheet v-model:visible="coinDropdownActive" :title="$t('home.selectCurrency')">
-      <div class="action-sheet-item" v-for="(item, index) in coinList" :key="index" @click="coinChange(index)">
-        <img :src="item.icon ? item.icon : coinDefaultIcon" alt="" />
-        <span>{{ item.symbol }}</span>
+    <nut-popup v-model:visible="coinDropdownActive" round closeable>
+      <div class="action-sheet-wrapper">
+        <div class="action-sheet-header">
+          <span>{{ $t('home.selectCurrency') }}</span>
+        </div>
+        <div class="action-sheet-item" v-for="(item, index) in coinList" :key="index" @click="coinChange(index)">
+          <img :src="item.icon ? item.icon : coinDefaultIcon" alt="" />
+          <span>{{ item.symbol }}</span>
+        </div>
       </div>
-    </nut-action-sheet>
+    </nut-popup>
 
-    <nut-action-sheet v-model:visible="sourceChainDropdownActive" :title="$t('home.selectChain')">
-      <div class="action-sheet-item" v-for="(item, index) in allChainList" :key="item.chainId" @click="sourceChainChange(index)">
-        <img :src="getChainIcon(item.chainId)" alt="" />
-        <span>{{ item.name }}</span>
+    <nut-popup v-model:visible="sourceChainDropdownActive" round closeable>
+       <div class="action-sheet-wrapper">
+        <div class="action-sheet-header">
+          <span>{{ $t('home.selectChain') }}</span>
+        </div>
+        <div class="action-sheet-item" v-for="(item, index) in allChainList" :key="item.chainId" @click="sourceChainChange(index)">
+          <img :src="getChainIcon(item.chainId)" alt="" />
+          <span>{{ item.name }}</span>
+        </div>
       </div>
-    </nut-action-sheet>
+    </nut-popup>
 
-    <nut-action-sheet v-model:visible="targetChainDropdownActive" :title="$t('home.selectChain')">
+    <nut-popup v-model:visible="targetChainDropdownActive" round closeable>
+      <div class="action-sheet-wrapper">
+        <div class="action-sheet-header">
+          <span>{{ $t('home.selectChain') }}</span>
+        </div>
       <div class="action-sheet-item" v-for="(item, index) in targetChainList" :key="item.chainId" @click="targetChainChange(index)">
         <img :src="getChainIcon(item.chainId)" alt="" />
         <span>{{ item.name }}</span>
       </div>
-    </nut-action-sheet>
+      </div>
+    </nut-popup>
   </div>
 
   {{ getUserInfo }}
 </template>
 
 <script lang="ts" setup name="HomePage">
+  import Header from '@/components/Header/index.vue';
   import { computed } from 'vue';
   import { useUserStore } from '@/store/modules/user';
   import { Issue } from '@nutui/icons-vue';
@@ -929,6 +906,9 @@
       case 56:
         url = `https://bscscan.com/address/${address.value}`;
         break;
+      case 18569:
+        url = `https://explorer.datachain.top/address/${address.value}`;
+        break;
       case 42164:
         url = `https://arbiscan.io/address/${address.value}`;
         break;
@@ -1009,10 +989,12 @@
   }
 
   .home-page {
+    margin:  0 auto;
     display: flex;
     flex-direction: column;
     min-height: 100%;
-
+    align-items: center;
+    padding: 20px 0 40px;
     input {
       padding: 0;
       border: none;
@@ -1027,200 +1009,8 @@
       font-size: 14px;
     }
 
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 44px;
-      padding: 10px 15px 0;
-
-      .logo {
-        width: 80px;
-      }
-
-      .lang-select {
-        position: relative;
-        height: 28px;
-        margin: 0 10px;
-        cursor: pointer;
-
-        .lang-select-btn {
-          display: flex;
-          align-items: center;
-          height: 28px;
-
-          img {
-            display: block;
-            width: 24px;
-            height: 24px;
-          }
-        }
-
-        .lang-dropdown {
-          position: absolute;
-          left: 50%;
-          min-width: 120px;
-          margin: 4px auto 0;
-          margin-top: 4px;
-          transform: translateX(-50%);
-          border: 1px solid #1b1a3b;
-          border-radius: 14px;
-          background: #f5f8ff;
-
-          .lang-dropdown-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 40px;
-            padding: 0 10px;
-            border-bottom: 1px solid rgb(27 26 59 / 10%);
-            color: #1b1a3b;
-            font-size: 12px;
-            font-weight: 400;
-            line-height: 1;
-
-            &:last-child {
-              border-bottom: none;
-            }
-          }
-        }
-      }
-
-      .wallet-connect {
-        position: relative;
-        width: 112px;
-        height: 28px;
-        background: #f5f8ff;
-        cursor: pointer;
-
-        .wallet-connect-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          border: 1px solid #1b1a3b;
-          border-radius: 14px;
-          color: #1b1a3b;
-          font-size: 14px;
-          font-weight: 400;
-
-          .wallet-address {
-            flex: 1;
-            padding-left: 10px;
-            overflow: hidden;
-          }
-
-          .wallet-arrow {
-            width: 16px;
-            height: 16px;
-            margin: 0 5px;
-          }
-        }
-
-        .wallet-dropdown {
-          position: absolute;
-          width: 100%;
-          background: #f5f8ff;
-          cursor: pointer;
-
-          .wallet-dropdown-wrapper {
-            width: 100%;
-            border: 1px solid #1b1a3b;
-            border-top-width: 0;
-            border-radius: 0 0 14px 14px;
-
-            .wallet-dropdown-item {
-              display: flex;
-              align-items: center;
-              height: 40px;
-              padding: 0 10px;
-              border-bottom: 1px solid rgb(27 26 59 / 10%);
-              color: #1b1a3b;
-              font-size: 12px;
-              font-weight: 400;
-              line-height: 1;
-
-              &:last-child {
-                border-bottom: none;
-              }
-
-              img {
-                width: 20px;
-                height: 20px;
-                margin-right: 6px;
-              }
-            }
-          }
-        }
-      }
-
-      .network-select {
-        position: relative;
-        margin-left: 10px;
-        cursor: pointer;
-
-        .network-select-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 28px;
-          border: 1px solid #1b1a3b;
-          border-radius: 14px;
-          background: #f5f8ff;
-          font-weight: 400;
-
-          .network-icon {
-            width: 20px;
-            height: 20px;
-            margin: 0 4px;
-            border-radius: 20px;
-          }
-
-          .network-arrow {
-            width: 16px;
-            height: 16px;
-            margin-right: 5px;
-          }
-        }
-
-        .network-dropdown {
-          position: absolute;
-          right: 0;
-          min-width: 112px;
-          margin-top: 4px;
-          border: 1px solid #1b1a3b;
-          border-radius: 14px;
-          background: #f5f8ff;
-
-          .network-dropdown-item {
-            display: flex;
-            align-items: center;
-            height: 40px;
-            padding: 0 10px;
-            border-bottom: 1px solid rgb(27 26 59 / 10%);
-            color: #1b1a3b;
-            font-size: 12px;
-            font-weight: 400;
-            line-height: 1;
-
-            &:last-child {
-              border-bottom: none;
-            }
-
-            img {
-              width: 20px;
-              height: 20px;
-              margin-right: 4px;
-              border-radius: 20px;
-            }
-          }
-        }
-      }
-    }
-
     .form {
+      width: 600px;
       padding: 20px 15px 30px;
 
       .form-item {
@@ -1372,6 +1162,7 @@
     }
 
     .record-wrapper {
+      width: 600px;
       flex: 1;
       padding: 15px;
       padding-bottom: 18px;
@@ -1501,20 +1292,39 @@
         }
       }
     }
-
+.action-sheet-wrapper {
+  width: 420px;
+  border-radius: 16px;
+  min-height: 360px;
+  .action-sheet-header {
+    display: flex;
+    align-items: center;
+    height: 60px;
+    padding: 0 15px;
+    border-radius: 16px 16px 0 0;
+    background: #f5f8ff;
+    color: #000e2b;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: left;
+    border-bottom: 1px solid rgb(27 26 59 / 10%);
+    margin-bottom: 10px;
+  }
     .action-sheet-item {
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      height: 50px;
-      padding: 0 15px;
+      height: 60px;
+      padding: 0 25px;
       border-bottom: 1px solid rgb(27 26 59 / 10%);
       background: #fff;
       color: #1b1a3b;
       font-size: 14px;
       font-weight: 400;
       cursor: pointer;
-
+      &:hover {
+        background: #f5f8ff;
+      }
       &:last-child {
         border-bottom: none;
       }
@@ -1522,9 +1332,10 @@
       img {
         width: 30px;
         height: 30px;
-        margin-right: 8px;
+        margin-right: 12px;
         border-radius: 30px;
       }
     }
   }
+}
 </style>

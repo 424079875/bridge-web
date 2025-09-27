@@ -14,10 +14,17 @@
 
 <style scoped lang="scss">
   .main-page {
-    background: #F5F8FF;
+    background: #F5FAF8;
     box-sizing: border-box;
     height: 100vh;
     overflow-y: scroll;
     overflow-x: hidden;
+     width: 100vw;
+    min-height: 100vh;
+    background: url('@/assets/bridge_footer_bg.png');
+    background-size: 100% auto;
+    background-position-y: bottom;
+    background-repeat: no-repeat;
+    align-items: center;
   }
 </style>

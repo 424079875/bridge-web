@@ -104,13 +104,12 @@
   .order-detail {
     width: 100%;
     min-height: 100%;
-
     .detail-header {
       display: flex;
       position: fixed;
       align-items: center;
-      width: 100%;
-      height: 44px;
+      width: 100vw;
+      height: 60px;
       border-bottom: 1px solid #e8effc;
       background: #f5f8ff;
       color: #000e2b;
@@ -134,7 +133,9 @@
     }
 
     .detail-content {
-      padding: 68px 15px 24px;
+      width: 600px;
+      padding: 88px 15px 24px;
+    margin: 0 auto;
 
       .detail-status {
         margin: 0 auto 30px;
