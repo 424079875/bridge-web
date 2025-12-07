@@ -14,17 +14,17 @@
     :networkIcon="getChainIcon(sourceChainId == -1 ? allChainList[sourceChainIndex].chainId : chainId)"
     :allChainList="allChainList"
     :getChainIcon="getChainIcon"
-    @toggleLangDropdown="langDropdownActive = !langDropdownActive"
-    @changeLang="changeLang"
-    @walletConnect="walletConnect"
-    @walletDropdown="walletDropdown"
-    @copyText="copyText"
-    @openExplorer="openExplorer"
-    @walletDisconnect="walletDisconnect"
-    @networkDropdown="networkDropdown"
-    @networkChange="networkChange" 
+    @toggle-lang-dropdown="langDropdownActive = !langDropdownActive"
+    @change-lang="changeLang"
+    @wallet-connect="walletConnect"
+    @wallet-dropdown="walletDropdown"
+    @copy-text="copyText"
+    @open-explorer="openExplorer"
+    @wallet-disconnect="walletDisconnect"
+    @network-dropdown="networkDropdown"
+    @network-change="networkChange"
   />
-  <div class="home-page" style="padding-top: 60px;">
+  <div class="home-page" style="padding-top: 60px">
     <div class="form">
       <div class="form-item">
         <div class="item-title">
@@ -168,7 +168,7 @@
     </nut-popup>
 
     <nut-popup v-model:visible="sourceChainDropdownActive" round closeable>
-       <div class="action-sheet-wrapper">
+      <div class="action-sheet-wrapper">
         <div class="action-sheet-header">
           <span>{{ $t('home.selectChain') }}</span>
         </div>
@@ -184,10 +184,10 @@
         <div class="action-sheet-header">
           <span>{{ $t('home.selectChain') }}</span>
         </div>
-      <div class="action-sheet-item" v-for="(item, index) in targetChainList" :key="item.chainId" @click="targetChainChange(index)">
-        <img :src="getChainIcon(item.chainId)" alt="" />
-        <span>{{ item.name }}</span>
-      </div>
+        <div class="action-sheet-item" v-for="(item, index) in targetChainList" :key="item.chainId" @click="targetChainChange(index)">
+          <img :src="getChainIcon(item.chainId)" alt="" />
+          <span>{{ item.name }}</span>
+        </div>
       </div>
     </nut-popup>
   </div>
@@ -906,7 +906,7 @@
       case 56:
         url = `https://bscscan.com/address/${address.value}`;
         break;
-      case 18569:
+      case 28569:
         url = `https://explorer.datachain.top/address/${address.value}`;
         break;
       case 42164:
@@ -989,7 +989,7 @@
   }
 
   .home-page {
-    margin:  0 auto;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     min-height: 100%;
@@ -1292,50 +1292,50 @@
         }
       }
     }
-.action-sheet-wrapper {
-  width: 420px;
-  border-radius: 16px;
-  min-height: 360px;
-  .action-sheet-header {
-    display: flex;
-    align-items: center;
-    height: 60px;
-    padding: 0 15px;
-    border-radius: 16px 16px 0 0;
-    background: #f5f8ff;
-    color: #000e2b;
-    font-size: 16px;
-    font-weight: 500;
-    text-align: left;
-    border-bottom: 1px solid rgb(27 26 59 / 10%);
-    margin-bottom: 10px;
-  }
-    .action-sheet-item {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      height: 60px;
-      padding: 0 25px;
-      border-bottom: 1px solid rgb(27 26 59 / 10%);
-      background: #fff;
-      color: #1b1a3b;
-      font-size: 14px;
-      font-weight: 400;
-      cursor: pointer;
-      &:hover {
+    .action-sheet-wrapper {
+      width: 420px;
+      border-radius: 16px;
+      min-height: 360px;
+      .action-sheet-header {
+        display: flex;
+        align-items: center;
+        height: 60px;
+        padding: 0 15px;
+        border-radius: 16px 16px 0 0;
         background: #f5f8ff;
+        color: #000e2b;
+        font-size: 16px;
+        font-weight: 500;
+        text-align: left;
+        border-bottom: 1px solid rgb(27 26 59 / 10%);
+        margin-bottom: 10px;
       }
-      &:last-child {
-        border-bottom: none;
-      }
+      .action-sheet-item {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        height: 60px;
+        padding: 0 25px;
+        border-bottom: 1px solid rgb(27 26 59 / 10%);
+        background: #fff;
+        color: #1b1a3b;
+        font-size: 14px;
+        font-weight: 400;
+        cursor: pointer;
+        &:hover {
+          background: #f5f8ff;
+        }
+        &:last-child {
+          border-bottom: none;
+        }
 
-      img {
-        width: 30px;
-        height: 30px;
-        margin-right: 12px;
-        border-radius: 30px;
+        img {
+          width: 30px;
+          height: 30px;
+          margin-right: 12px;
+          border-radius: 30px;
+        }
       }
     }
   }
-}
 </style>

@@ -50,7 +50,7 @@ const bsc = /*#__PURE__*/ defineChain({
 // };
 
 const dtc = defineChain({
-  id: 18569,
+  id: 28569,
   name: 'DTC Chain',
   nativeCurrency: { name: 'dtc', symbol: 'DTC', decimals: 18 },
   rpcUrls: {
