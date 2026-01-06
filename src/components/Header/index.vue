@@ -14,10 +14,18 @@
       </div>
     </div> -->
     <div class="wallet-connect">
-      <div class="wallet-connect-btn" v-if="!isConnected" @click="$emit('walletConnect')">{{ connectWalletText }}</div>
       <div
         class="wallet-connect-btn"
-        :style="{ borderRadius: walletDropdownActive ? '14px 14px 0 0' : '14px' }"
+        v-if="!isConnected"
+        @click="$emit('walletConnect')"
+      >
+        {{ connectWalletText }}
+      </div>
+      <div
+        class="wallet-connect-btn"
+        :style="{
+          borderRadius: walletDropdownActive ? '14px 14px 0 0' : '14px',
+        }"
         @click="$emit('walletDropdown')"
         v-else
       >
@@ -44,10 +52,19 @@
     <div class="network-select" v-if="isConnected">
       <div class="network-select-btn" @click="$emit('networkDropdown')">
         <img class="network-icon" :src="networkIcon" alt="" />
-        <img class="network-arrow" src="@/assets/icon_arrow_down_2.png" alt="" />
+        <img
+          class="network-arrow"
+          src="@/assets/icon_arrow_down_2.png"
+          alt=""
+        />
       </div>
       <div class="network-dropdown" v-show="networkDropdownActive">
-        <div class="network-dropdown-item" v-for="chain in allChainList" :key="chain.chainId" @click="$emit('networkChange', chain.chainId)">
+        <div
+          class="network-dropdown-item"
+          v-for="chain in allChainList"
+          :key="chain.chainId"
+          @click="$emit('networkChange', chain.chainId)"
+        >
           <img :src="getChainIcon(chain.chainId)" alt="" />
           <span>{{ chain.name }}</span>
         </div>
@@ -91,15 +108,28 @@ const props = defineProps({
   height: 60px;
   padding: 0 32px;
   gap: 16px;
-  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  @media screen and (max-width: 750px) {
+    gap: 8px;
+    height: 44px;
+    padding: 0 15px;
+    width: calc(100vw - 30px);
+  }
 }
-.logo{
+.logo {
   height: 40px;
   width: 40px;
+  @media screen and (max-width: 750px) {
+    height: 24px;
+    width: 24px;
+  }
 }
-.title{
+.title {
   font-size: 20px;
   font-weight: bold;
+  @media screen and (max-width: 750px) {
+    font-size: 14px;
+  }
 }
 .lang-select {
   position: relative;
@@ -146,6 +176,10 @@ const props = defineProps({
   position: relative;
   width: 140px;
   height: 36px;
+  @media screen and (max-width: 750px) {
+    width: 100px;
+    height: 28px;
+  }
   background: #f5f8ff;
   cursor: pointer;
   .wallet-connect-btn {
@@ -160,6 +194,9 @@ const props = defineProps({
     color: #1b1a3b;
     font-size: 15px;
     font-weight: 500;
+    @media screen and (max-width: 750px) {
+      font-size: 12px;
+    }
     .wallet-address {
       flex: 1;
       padding-left: 10px;
@@ -189,6 +226,9 @@ const props = defineProps({
         border-bottom: 1px solid rgb(27 26 59 / 10%);
         color: #1b1a3b;
         font-size: 14px;
+        @media screen and (max-width: 750px) {
+          font-size: 12px;
+        }
         font-weight: 500;
         line-height: 1;
         &:last-child {
@@ -198,6 +238,10 @@ const props = defineProps({
           width: 20px;
           height: 20px;
           margin-right: 6px;
+          @media screen and (max-width: 750px) {
+            width: 14px;
+            height: 14px;
+          }
         }
       }
     }
@@ -216,11 +260,18 @@ const props = defineProps({
     border-radius: 14px;
     background: #f5f8ff;
     font-weight: 500;
+    @media screen and (max-width: 750px) {
+      height: 28px;
+    }
     .network-icon {
       width: 20px;
       height: 20px;
       margin: 0 4px;
       border-radius: 20px;
+      @media screen and (max-width: 750px) {
+        width: 14px;
+        height: 14px;
+      }
     }
     .network-arrow {
       width: 16px;
@@ -244,6 +295,9 @@ const props = defineProps({
       border-bottom: 1px solid rgb(27 26 59 / 10%);
       color: #1b1a3b;
       font-size: 14px;
+      @media screen and (max-width: 750px) {
+        font-size: 12px;
+      }
       font-weight: 500;
       line-height: 1;
       &:last-child {
@@ -254,6 +308,10 @@ const props = defineProps({
         height: 20px;
         margin-right: 4px;
         border-radius: 20px;
+        @media screen and (max-width: 750px) {
+          width: 14px;
+          height: 14px;
+        }
       }
     }
   }

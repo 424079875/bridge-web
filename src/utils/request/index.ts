@@ -1,11 +1,17 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { showToast } from 'vant';
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from "axios";
+import { showToast } from "vant";
 
 const service: AxiosInstance = axios.create({
   withCredentials: false,
   timeout: 10000,
   // baseURL: 'https://mainapi.corebridge.info',
-  baseURL: 'https://bridge-api.datachain.top',
+  baseURL: "https://bridge-api.datachain.top",
 });
 
 service.interceptors.request.use(
@@ -22,13 +28,13 @@ service.interceptors.response.use(
     const res = response.data;
     if (res.code !== 0) {
       showToast(res.msg);
-      return Promise.reject(res.msg || 'Error');
+      return Promise.reject(res.msg || "Error");
     } else {
       return res;
     }
   },
   (error: AxiosError) => {
-    console.log('err' + error);
+    console.log("err" + error);
     showToast(error.message);
     return Promise.reject(error.message);
   },
@@ -39,11 +45,19 @@ export const http = {
     return service.get(url, config);
   },
 
-  post<T = any>(url: string, data?: object, config?: AxiosRequestConfig): Promise<T> {
+  post<T = any>(
+    url: string,
+    data?: object,
+    config?: AxiosRequestConfig,
+  ): Promise<T> {
     return service.post(url, data, config);
   },
 
-  put<T = any>(url: string, data?: object, config?: AxiosRequestConfig): Promise<T> {
+  put<T = any>(
+    url: string,
+    data?: object,
+    config?: AxiosRequestConfig,
+  ): Promise<T> {
     return service.put(url, data, config);
   },
 
