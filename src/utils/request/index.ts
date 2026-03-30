@@ -11,7 +11,7 @@ const service: AxiosInstance = axios.create({
   withCredentials: false,
   timeout: 10000,
   // baseURL: 'https://mainapi.corebridge.info',
-  baseURL: "https://bridge-api.datachain.top",
+  baseURL: "https://bridge-api.ltlabchain.com",
 });
 
 service.interceptors.request.use(

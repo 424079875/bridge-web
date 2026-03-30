@@ -1,7 +1,13 @@
-import { http, createConfig } from '@wagmi/vue';
-import { mainnet, bscTestnet, arbitrum, arbitrumSepolia, sepolia } from '@wagmi/vue/chains';
-import { injected } from '@wagmi/vue/connectors';
-import { defineChain } from 'viem';
+import { http, createConfig } from "@wagmi/vue";
+import {
+  mainnet,
+  bscTestnet,
+  arbitrum,
+  arbitrumSepolia,
+  sepolia,
+} from "@wagmi/vue/chains";
+import { injected } from "@wagmi/vue/connectors";
+import { defineChain } from "viem";
 // const projectId = '6875db1de38dc4aba8eea69664eeb3a6'
 
 // const kadsea = defineChain({
@@ -17,25 +23,25 @@ import { defineChain } from 'viem';
 // });
 const bsc = /*#__PURE__*/ defineChain({
   id: 56,
-  name: 'BNB Smart Chain',
+  name: "BNB Smart Chain",
   nativeCurrency: {
     decimals: 18,
-    name: 'BNB',
-    symbol: 'BNB',
+    name: "BNB",
+    symbol: "BNB",
   },
   rpcUrls: {
-    default: { http: ['https://bsc-dataseed3.defibit.io'] },
+    default: { http: ["https://bsc-dataseed3.defibit.io"] },
   },
   blockExplorers: {
     default: {
-      name: 'BscScan',
-      url: 'https://bscscan.com',
-      apiUrl: 'https://api.bscscan.com/api',
+      name: "BscScan",
+      url: "https://bscscan.com",
+      apiUrl: "https://api.bscscan.com/api",
     },
   },
   contracts: {
     multicall3: {
-      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      address: "0xca11bde05977b3631167028862be2a173976ca11",
       blockCreated: 15921452,
     },
   },
@@ -50,14 +56,14 @@ const bsc = /*#__PURE__*/ defineChain({
 // };
 
 const dtc = defineChain({
-  id: 28569,
-  name: 'DTC Chain',
-  nativeCurrency: { name: 'dtc', symbol: 'DTC', decimals: 18 },
+  id: 21569,
+  name: "Lition Chain",
+  nativeCurrency: { name: "LT", symbol: "LT", decimals: 18 },
   rpcUrls: {
-    default: { http: ['https://node.datachain.top'] },
+    default: { http: ["https://node.ltlabchain.com"] },
   },
   blockExplorers: {
-    default: { name: 'DTCscan', url: 'https://explorer.datachain.top' },
+    default: { name: "LitionScan", url: "https://explorer.ltlabchain.com" },
   },
 });
 export const config = createConfig({
@@ -70,7 +76,7 @@ export const config = createConfig({
     [dtc.id]: http(),
     [mainnet.id]: http(),
     [sepolia.id]: http(),
-    [bsc.id]: http('https://bsc-dataseed3.defibit.io'),
+    [bsc.id]: http("https://bsc-dataseed3.defibit.io"),
     [bscTestnet.id]: http(),
     [arbitrum.id]: http(),
     [arbitrumSepolia.id]: http(),

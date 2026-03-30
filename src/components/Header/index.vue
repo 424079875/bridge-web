@@ -1,7 +1,7 @@
 <template>
   <header class="global-header">
-    <img class="logo" src="@/assets/icon-placeholder.svg" alt="" />
-    <span class="title">DTC Bridge</span>
+    <img class="logo" src="@/assets/icon-placeholder.jpg" alt="" />
+    <span class="title">Ltlab Bridge</span>
     <div class="flex-1"></div>
     <!-- <div class="lang-select">
       <div class="lang-select-btn">
@@ -117,11 +117,11 @@ const props = defineProps({
   }
 }
 .logo {
-  height: 40px;
-  width: 40px;
+  height: 64px;
+  width: 64px;
   @media screen and (max-width: 750px) {
-    height: 24px;
-    width: 24px;
+    height: 40px;
+    width: 40px;
   }
 }
 .title {

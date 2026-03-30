@@ -1177,6 +1177,9 @@ const openExplorer = () => {
     case "tron":
       url = `https://tronscan.org/#/address/${address.value}`;
       break;
+    case 21569:
+      url = `https://explorer.ltlabchain.com/#/address/${address.value}`;
+      break;
     default:
       break;
   }
