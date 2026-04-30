@@ -56,7 +56,7 @@ const bsc = /*#__PURE__*/ defineChain({
 // };
 
 const dtc = defineChain({
-  id: 21569,
+  id: 1206,
   name: "Lition Chain",
   nativeCurrency: { name: "LT", symbol: "LT", decimals: 18 },
   rpcUrls: {

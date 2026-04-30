@@ -347,6 +347,7 @@ import { bridgeAbi } from "@/abi/bridge";
 import { erc20Abi } from "@/abi/erc20";
 import { ethUsdtAbi } from "@/abi/ethUsdt";
 import router from "@/router";
+import { MaxUint256 } from "ethers";
 
 const showOrderTips = ref(false);
 const chainId = useChainId();
@@ -444,7 +445,7 @@ const sourceChainId = computed(() => {
   const id = allChainList.value
     ? allChainList?.value[sourceChainIndex.value]?.chainId
     : undefined;
-  console.log("sourceChainId", id);
+  console.log("sourceChainId", id, allChainList.value, sourceChainIndex.value);
   return id ? (id.includes("tron") ? -1 : Number(id)) : undefined;
 });
 const isEthUsdt = computed(() => {
@@ -469,15 +470,18 @@ const getTronBalance = async () => {
   tronAllowance.value = null;
   if (window.tronWeb.ready) {
     if (tokenAddress.value) {
+      console.log("getTronBalance tokenAddress", tokenAddress.value);
       const contract = await window.tronWeb.contract().at(tokenAddress.value);
       const balance = await contract.balanceOf(address.value).call();
       tronBalance.value =
-        balance / Math.pow(10, coinList.value[coinIndex.value].decimals);
+        Number(balance) /
+        Math.pow(10, coinList.value[coinIndex.value].decimals);
       const allowance = await contract
         .allowance(address.value, bridgeAddress.value)
         .call();
       tronAllowance.value =
-        allowance / Math.pow(10, coinList.value[coinIndex.value].decimals);
+        Number(allowance) /
+        Math.pow(10, coinList.value[coinIndex.value].decimals);
       console.log("tronBalance:", tronBalance.value);
       console.log("tronAllowance:", tronAllowance.value);
     } else {
@@ -617,7 +621,7 @@ const tronApprove = async () => {
     ).toString();
     const parameter = [
       { type: "address", value: bridgeAddress.value },
-      { type: "uint256", value: balance },
+      { type: "uint256", value: MaxUint256.toString() },
     ];
     var tx = await window.tronWeb.transactionBuilder.triggerSmartContract(
       tokenAddress.value,
@@ -637,7 +641,8 @@ const tronApprove = async () => {
         .allowance(address.value, bridgeAddress.value)
         .call();
       tronAllowance.value =
-        allowance / Math.pow(10, coinList.value[coinIndex.value].decimals);
+        Number(allowance) /
+        Math.pow(10, coinList.value[coinIndex.value].decimals);
     }
     lockApprove.value = false;
   } catch (res: any) {
@@ -659,7 +664,7 @@ const tronDeposit = async (amount) => {
   try {
     if (window.tronWeb.ready) {
       const parameter = [
-        { type: "string", value: toAccountAddress.value ?? address.value },
+        { type: "address", value: toAccountAddress.value ?? address.value },
         { type: "uint256", value: amount },
         {
           type: "string",
@@ -667,9 +672,11 @@ const tronDeposit = async (amount) => {
         },
         { type: "address", value: tokenAddress.value },
       ];
+      console.log("parameter", parameter);
+      // return;
       var tx = await window.tronWeb.transactionBuilder.triggerSmartContract(
         bridgeAddress.value,
-        "Deposit(string,uint256,string,address)",
+        "Deposit(address,uint256,string,address)",
         {
           callValue: 0,
         },
@@ -832,6 +839,7 @@ const submit = async () => {
 
 const evmDeposit = (amount) => {
   try {
+    let toChainId = targetChainList.value[targetChainIndex.value].chainId;
     depositWriteContract(
       {
         abi: bridgeAbi,
@@ -839,9 +847,11 @@ const evmDeposit = (amount) => {
         functionName: "Deposit",
         value: tokenAddress.value === undefined ? amount : undefined,
         args: [
-          toAccountAddress.value,
+          toChainId == "tron"
+            ? tronToEth(toAccountAddress.value)
+            : toAccountAddress.value,
           amount,
-          targetChainList.value[targetChainIndex.value].chainId,
+          toChainId,
           coinList.value[coinIndex.value].address, // tokenAddress
         ],
       },
@@ -874,6 +884,13 @@ const evmDeposit = (amount) => {
     lockSubmit.value = false;
     showToast.text(loadLang()[i18n.global.locale.value].home.transactionFailed);
   }
+};
+
+const tronToEth = (addr) => {
+  const hex = window.tronWeb.address.toHex(addr);
+
+  // 去掉 41 前缀 → 换成 0x
+  return "0x" + hex.slice(2);
 };
 
 const approve = () => {
@@ -1177,7 +1194,7 @@ const openExplorer = () => {
     case "tron":
       url = `https://tronscan.org/#/address/${address.value}`;
       break;
-    case 21569:
+    case 1206:
       url = `https://explorer.ltlabchain.com/#/address/${address.value}`;
       break;
     default:

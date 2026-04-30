@@ -1,7 +1,7 @@
 <template>
   <header class="global-header">
     <img class="logo" src="@/assets/icon-placeholder.jpg" alt="" />
-    <span class="title">Ltlab Bridge</span>
+    <span class="title">LTLC Bridge</span>
     <div class="flex-1"></div>
     <!-- <div class="lang-select">
       <div class="lang-select-btn">
