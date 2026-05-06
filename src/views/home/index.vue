@@ -1431,7 +1431,13 @@ const formatNumber = (number: number | string): string => {
       height: 50px;
       border-radius: 14px;
       // background: linear-gradient(to bottom, #26DDA6 0%, #4EFFCA 100%);
-      background: linear-gradient(to bottom right, #0049e7 0%, #c835f8 100%);
+      // background: linear-gradient(to bottom right, #0049e7 0%, #c835f8 100%);
+      background: linear-gradient(
+        90deg,
+        rgb(2, 52, 141) 0%,
+        rgb(107, 46, 198) 59.62%,
+        rgb(131, 51, 166) 100%
+      );
       color: #fff;
       font-size: 16px;
       font-weight: 400;
